@@ -1,0 +1,57 @@
+.rs.restartR()  # Esto funciona en RStudio
+# clear workplace
+rm(list =ls())
+
+# Cargar librerías necesarias
+library(readxl)  # Para leer archivos Excel
+library(dplyr)   # Para manipulación de datos
+
+# Leer el archivo Excel (asegúrate de usar el camino correcto al archivo)
+data <- read_excel("DATA_COMP_AX.xlsx", sheet = "DATA")
+
+# Resumen general de las variables
+summary(data)
+
+# Análisis descriptivo general (media, mediana, desviación estándar, etc.)
+descriptive_stats <- data %>%
+  summarise(across(where(is.numeric), list(
+    mean = ~mean(., na.rm = TRUE),
+    median = ~median(., na.rm = TRUE),
+    sd = ~sd(., na.rm = TRUE),
+    min = ~min(., na.rm = TRUE),
+    max = ~max(., na.rm = TRUE)
+  )))
+
+# Ver los resultados
+print(descriptive_stats)
+
+# Si deseas guardar los resultados en un archivo CSV
+write.csv(descriptive_stats, "descriptive_stats.csv", row.names = FALSE)
+
+#ARCHIVOS EXCEL
+# Instalar el paquete writexl si no lo tienes
+if (!require("writexl")) install.packages("writexl")
+
+# Cargar las librerías necesarias
+library(readxl)   # Para leer archivos Excel
+library(dplyr)    # Para manipulación de datos
+library(writexl)  # Para escribir archivos Excel
+
+# Leer el archivo Excel
+data <- read_excel("DATA_COMP_AX.xlsx", sheet = "DATA")
+
+# Análisis descriptivo general (media, mediana, desviación estándar, etc.)
+descriptive_stats <- data %>%
+  summarise(across(where(is.numeric), list(
+    mean = ~mean(., na.rm = TRUE),
+    median = ~median(., na.rm = TRUE),
+    sd = ~sd(., na.rm = TRUE),
+    min = ~min(., na.rm = TRUE),
+    max = ~max(., na.rm = TRUE)
+  )))
+
+# Guardar los resultados en un archivo Excel
+write_xlsx(descriptive_stats, "descriptive_stats.xlsx")
+
+# Confirmar la ruta donde se guardó el archivo
+cat("Archivo guardado como 'descriptive_stats.xlsx' en el directorio actual.")
