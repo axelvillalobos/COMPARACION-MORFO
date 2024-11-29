@@ -1,8 +1,0 @@
-import pandas as pd
-
-# Load the Excel file to inspect the content
-file_path = 'DATA_COMP_AX.xlsx'
-data = pd.ExcelFile(file_path)
-
-# Display the sheet names to understand the structure
-data.sheet_names

@@ -1,0 +1,126 @@
+import pandas as pd
+
+# Load the Excel file to inspect the content
+file_path = 'DATA_COMP_AX.xlsx'
+data = pd.ExcelFile(file_path)
+
+# Display the sheet names to understand the structure
+data.sheet_names
+
+# Load the main sheet into a DataFrame for further inspection
+df = data.parse('DATA')
+
+# Display the first few rows to understand its structure
+df.head()
+
+
+# Realizar un análisis descriptivo general para las variables estadísticas
+stats_df = df.iloc[:, 4:].describe()
+
+# Exportar el análisis descriptivo a un archivo Excel
+output_path = 'analisis_descriptivo_general.xlsx'
+stats_df.to_excel(output_path, sheet_name='Descriptivo General')
+
+output_path
+
+COMPARACON DE MEDIAS POR GR
+
+# Dropping SX and LOC as per the instruction, focusing on other measures grouped by GR
+# Group the data by GR and perform statistical comparison
+
+from scipy.stats import f_oneway
+
+# Selecting numeric columns excluding SX and LOC
+columns_to_consider = [col for col in df.columns if df[col].dtype in ['float64', 'int64'] and col not in ['SX', 'LOC', 'GR']]
+grouped_data = df.groupby('GR')[columns_to_consider]
+
+# Performing ANOVA for each measure across GR groups
+anova_results = []
+for measure in columns_to_consider:
+    groups = [group[measure].dropna() for name, group in grouped_data]
+    f_stat, p_value = f_oneway(*groups)
+    anova_results.append({'Measure': measure, 'F-Statistic': f_stat, 'P-Value': p_value})
+
+# Convert results to DataFrame
+anova_results_df = pd.DataFrame(anova_results)
+
+# Save results to an Excel file
+output_path = 'Comparacion_Medias_GR.xlsx'
+anova_results_df.to_excel(output_path, index=False)
+
+output_path
+
+COMPARACION POR SEXO
+
+# Reimport libraries and reload the dataset as the session state was reset.
+import pandas as pd
+from scipy.stats import ttest_ind, f_oneway
+
+# Reload the data
+file_path = 'DATA_COMP_AX.xlsx'
+data = pd.ExcelFile(file_path)
+df = data.parse('DATA')
+
+# Separate the data by sex (SX)
+group_1 = df[df['SX'] == 1]
+group_2 = df[df['SX'] == 2]
+
+# Initialize a dictionary to store results
+results = []
+
+# Perform t-tests for each numerical column
+for column in df.select_dtypes(include=['float64', 'int64']).columns:
+    if column != 'SX':  # Exclude SX itself
+        # Perform t-test
+        t_stat, p_value = ttest_ind(group_1[column], group_2[column], nan_policy='omit', equal_var=False)
+        
+        # Perform ANOVA as well
+        f_stat, anova_p = f_oneway(group_1[column].dropna(), group_2[column].dropna())
+        
+        # Append results
+        results.append({
+            'Variable': column,
+            't-stat': t_stat,
+            't-test p-value': p_value,
+            'F-stat': f_stat,
+            'ANOVA p-value': anova_p
+        })
+
+# Convert the results to a DataFrame
+analysis_results = pd.DataFrame(results)
+
+# Save the results to an Excel file
+analysis_output_path = 'analysis_by_SX.xlsx'
+analysis_results.to_excel(analysis_output_path, index=False)
+
+analysis_output_path
+
+# Select relevant columns for zoometric measures (excluding 'NUM', 'LOC', 'GR') and 'SX'
+zoometric_columns = [
+    'PV', 'AC', 'LC', 'ACR', 'DDE', 'PT', 'DBC', 'AGR', 'AG', 'LG', 'PC', 
+    'LgCo', 'Lcu', 'ICE', 'ITO', 'IPE', 'ICO', 'IDC', 'IDT', 'IPT', 'IPL', 
+    'IPRT', 'IPRO'
+]
+df_zoometric = df[['SX'] + zoometric_columns]
+
+# Group by 'SX' and calculate mean and standard deviation for comparison
+grouped_stats = df_zoometric.groupby('SX').agg(['mean', 'std']).reset_index()
+
+# Show the result
+grouped_stats
+
+COMPARACION POR LOCALIDAD
+
+# Grouping data by 'LOC' and calculating mean for the numeric columns
+mean_comparison = df.groupby('LOC').mean(numeric_only=True)
+
+# Export the comparison to an Excel file
+output_path = 'Comparacion_Medias_Zoometricas.xlsx'
+mean_comparison.to_excel(output_path)
+
+output_path
+
+
+
+
+
